@@ -1,4 +1,5 @@
-# torchrun --nproc_per_node=4 run_eval_prm_trl.py 
+# torchrun --nproc_per_node=4 eval_ProcessBench.py --model <model_path> -b 24 -w 4 -s "\n"
+import argparse
 import json
 import os
 import random
@@ -17,17 +18,16 @@ def collate_fn(batch, tokenizer, separator = '\n'):
     input_ids = []
     score_ids = []
     labels = []
+    separator_ids = tokenizer.encode(separator, add_special_tokens=False, return_tensors='pt')
     for i in batch:
-        text = i['problem'] + separator
-        input_idx = tokenizer(text, return_tensors='pt')['input_ids']
+        prompt_ids = tokenizer(i['problem'], add_special_tokens=False, return_tensors='pt')['input_ids']
         score_ids.append([])
-        for j in i['steps']:
-            completion = j + '\n'
-            completion_idx = tokenizer(completion, return_tensors='pt')['input_ids']
-            input_idx = torch.cat([input_idx, completion_idx], dim=-1)
-            score_ids[-1].append(input_idx.size(-1) - 1)
+        for completion in i['steps']:
+            completion_ids = tokenizer(completion, add_special_tokens=False, return_tensors='pt')['input_ids']
+            prompt_ids = torch.cat([prompt_ids, completion_ids, separator_ids], dim=-1)
+            score_ids[-1].append(prompt_ids.size(-1) - 1)
         labels.append(i['label'])
-        input_ids.append(input_idx)
+        input_ids.append(prompt_ids)
     
     # right pad input_ids
     pad_token_id = tokenizer.pad_token_id
@@ -72,12 +72,12 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-def main():
-    bs = 24
-    num_of_workers = 4
-    separator = "\n"  # It's important to use the same separator as the one used during TRL training
+def main(args):
+    bs = args.batch_size
+    num_of_workers = args.num_of_workers
+    separator = args.separator
+    model_path = args.model
 
-    model_path = "/local_path_to_a_PRM_trained_by_TRL/qwen25-math-7b-instruct-PRM800k"
     model_name = model_path.split('/')[-1]
 
     configs = {
@@ -91,6 +91,7 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
 
     accelerator = Accelerator()
+    print(f'Loading model from {model_path}')
     model = transformers.AutoModelForTokenClassification.from_pretrained(model_path)
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_path)
     model = accelerator.prepare(model)
@@ -172,6 +173,13 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--model", type=str)
+    parser.add_argument("-b", "--batch_size", type=int, default=24)
+    parser.add_argument("-w", "--num_of_workers", type=int, default=4)
+    parser.add_argument("-s", "--separator", type=str, default="\n", help="It's important to use the same separator as the one used during TRL training")
+    args = parser.parse_args()
+
     set_seed(42)
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    main()
+    main(args)
