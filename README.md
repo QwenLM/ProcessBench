@@ -2,27 +2,23 @@
 
 📄 [**[paper]**](https://huggingface.co/papers/2412.06559) 🤗 [**[data]**](https://huggingface.co/datasets/Qwen/ProcessBench)
 
-This is the official repository for paper "**ProcessBench: Identifying Process Errors in Mathematical Reasoning**"
+This is the official repository for **ACL 2025** paper "[ProcessBench: Identifying Process Errors in Mathematical Reasoning](https://huggingface.co/papers/2412.06559)"
 
 If you find this work relevant or helpful to your work, please kindly cite us:
 
-```
-@article{processbench,
+```latex
+@inproceedings{
+  processbench,
   title={ProcessBench: Identifying Process Errors in Mathematical Reasoning}, 
   author={
     Chujie Zheng and Zhenru Zhang and Beichen Zhang and Runji Lin and Keming Lu and
     Bowen Yu and Dayiheng Liu and Jingren Zhou and Junyang Lin
   },
-  journal={arXiv preprint arXiv:2412.06559},
-  year={2024}
+  booktitle={The 63rd Annual Meeting of the Association for Computational Linguistics
+},
+  year={2025}
 }
 ```
-
-## News
-
-* **[12/13/2024]** Released the evaluation [code](./code/run_eval_prm_rlhflow.py) for the RLHFlow PRMs
-* **[12/11/2024]** Released the evaluation [**code**](./code) and the [**data**](https://huggingface.co/datasets/Qwen/ProcessBench) on HuggingFace 
-* **[12/10/2024]** Released the [**paper**](https://huggingface.co/papers/2412.06559) on arXiv
 
 ## Data Usage
 
