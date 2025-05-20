@@ -16,13 +16,14 @@ vllm serve \
 Then you can run the following script to evaluate the model.
 """
 
-import os
-import numpy as np
 import json
-from tqdm import tqdm
+import os
 from multiprocessing import Pool
-from openai import OpenAI
+
+import numpy as np
 from datasets import load_dataset
+from openai import OpenAI
+from tqdm import tqdm
 
 
 def main():
@@ -55,7 +56,7 @@ def main():
 
     configs = ['gsm8k', 'math', 'olympiadbench', 'omnimath']
     for config in configs:
-        input_data = load_dataset('/cpfs01/user/zhengchujie.zcj/hf_datasets/Qwen/ProcessBench', split=config)
+        input_data = load_dataset('Qwen/ProcessBench', split=config)
         with Pool(32) as p:
             predictions = list(tqdm(p.imap(single_process, input_data), total=len(input_data),
                                     desc=f'Processing {config}', dynamic_ncols=True))
